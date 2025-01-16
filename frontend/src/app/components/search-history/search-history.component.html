@@ -1,0 +1,10 @@
+<div class="container">
+  <h2>Search History</h2>
+  <div class="history-list">
+    <div class="history-item" *ngFor="let book of searchHistory">
+      <h3>{{ book.title }}</h3>
+      <p><strong>Author:</strong> {{ book.author }}</p>
+      <p><strong>Search Date:</strong> {{ book.searchDate | date:'medium' }}</p>
+    </div>
+  </div>
+</div>
