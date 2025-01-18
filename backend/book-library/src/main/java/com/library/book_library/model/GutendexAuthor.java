@@ -1,29 +1,40 @@
 package com.library.book_library.model;
 
-import java.util.List;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 
+import java.util.List;
+import java.util.Objects;
+
 @Entity
-public class Author {
+public class GutendexAuthor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @JsonProperty("name")
     private String name;
 
-    @ManyToMany(mappedBy = "authors")
-    private List<Book> books;
+    @ManyToMany
+    @JoinTable(
+        name = "gutendex_author_author",
+        joinColumns = @JoinColumn(name = "gutendex_author_id"),
+        inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    private List<Author> authors;
 
-    @ManyToMany(mappedBy = "authors")
-    private List<GutendexAuthor> gutendexAuthors;
+    public GutendexAuthor() {
+    }
 
-    public Author(String name) {
+    public GutendexAuthor(String name) {
         this.name = name;
     }
 
@@ -39,8 +50,8 @@ public class Author {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Author author = (Author) o;
-        return Objects.equals(name, author.name);
+        GutendexAuthor that = (GutendexAuthor) o;
+        return Objects.equals(name, that.name);
     }
 
     @Override
@@ -50,7 +61,7 @@ public class Author {
 
     @Override
     public String toString() {
-        return "Author{" +
+        return "GutendexAuthor{" +
                 "name='" + name + '\'' +
                 '}';
     }

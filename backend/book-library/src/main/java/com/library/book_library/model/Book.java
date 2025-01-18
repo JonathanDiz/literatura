@@ -1,28 +1,44 @@
 package com.library.book_library.model;
 
+import jakarta.persistence.*;
 import java.util.List;
 
+@Entity
 public class Book {
-    private int id;
-    private String title;
-    private List<Author> authors;
-    private int downloadCount;
-    private List<String> languages;
 
-    public Book(int id, String title, List<Author> authors, int downloadCount, List<String> languages) {
-        this.id = id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    @ManyToMany
+    @JoinTable(name = "book_author",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    private List<Author> authors;
+
+    @ElementCollection
+    private List<String> gutendexAuthorNames; // Solo almacena los nombres de los autores
+
+    @OneToMany(mappedBy = "Book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GutendexBook> gutendexBooks;
+
+    // Constructores
+    public Book() {}
+
+    public Book(String title, List<String> gutendexAuthorNames) {
         this.title = title;
-        this.authors = authors;
-        this.downloadCount = downloadCount;
-        this.languages = languages;
+        this.gutendexAuthorNames = gutendexAuthorNames;
     }
 
-    // Getters y Setters
-    public int getId() {
+    // Getters y setters
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -34,27 +50,20 @@ public class Book {
         this.title = title;
     }
 
-    public List<Author> getAuthors() {
-        return authors;
+    public List<String> getGutendexAuthorNames() {
+        return gutendexAuthorNames;
     }
 
-    public void setAuthors(List<Author> authors) {
-        this.authors = authors;
+    public void setGutendexAuthorNames(List<String> gutendexAuthorNames) {
+        this.gutendexAuthorNames = gutendexAuthorNames;
     }
 
-    public int getDownloadCount() {
-        return downloadCount;
-    }
-
-    public void setDownloadCount(int downloadCount) {
-        this.downloadCount = downloadCount;
-    }
-
-    public List<String> getLanguages() {
-        return languages;
-    }
-
-    public void setLanguages(List<String> languages) {
-        this.languages = languages;
+    @Override
+    public String toString() {
+        return "Book{" +
+               "id=" + id +
+               ", title='" + title + '\'' +
+               ", gutendexAuthorNames=" + gutendexAuthorNames +
+               '}';
     }
 }
