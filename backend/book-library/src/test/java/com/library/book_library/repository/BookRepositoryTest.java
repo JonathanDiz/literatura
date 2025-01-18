@@ -38,7 +38,7 @@ class BookRepositoryTest {
     @Test
     void testFindBySearchQuery() {
         // Buscar libros que coincidan con un query
-        List<Book> result = bookRepository.findBySearchQuery("Java");
+        Page<Book> result = bookRepository.findBySearchQuery("Java", null);
         assertThat(result).hasSize(2); // Hay dos libros con "Java" en el título
     }
 
