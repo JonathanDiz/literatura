@@ -8,6 +8,8 @@ import com.library.book_library.repository.GutendexAuthorRepository;
 import com.library.book_library.model.GutendexBook;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -15,14 +17,20 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 @Service
 public class BookService {
 
     private final WebClient webClient;
-    private final BookRepository bookRepository;  // El repositorio para manejar libros
     private final GutendexAuthorRepository authorRepository;  // Repositorio para manejar autores
 
     @Autowired
+    private BookRepository bookRepository;
+
+    public Page<Book> getBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable);
+    }
+
     public BookService(WebClient webClient, BookRepository bookRepository, GutendexAuthorRepository authorRepository) {
         this.webClient = webClient;
         this.bookRepository = bookRepository;

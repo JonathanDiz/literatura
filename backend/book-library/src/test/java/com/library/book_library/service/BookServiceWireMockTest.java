@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -25,22 +24,22 @@ public class BookServiceWireMockTest {
     private static WireMockServer wireMockServer;
 
     @Mock
-    private BookRepository bookRepository;
-
-    @Mock
-    private GutendexAuthorRepository authorRepository;
-
-    @Autowired
-    private BookService bookService;
-
-    @BeforeAll
-    static void setUp() {
-        wireMockServer = new WireMockServer(0); // Puerto dinámico
-        wireMockServer.start();
-
-        String baseUrl = "http://localhost:" + wireMockServer.port();
-        WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
-        bookService = new BookService(webClient);
+    private static BookRepository bookRepository;
+    
+        @Mock
+        private static GutendexAuthorRepository authorRepository;
+            
+                @Autowired
+                private static BookService bookService;
+                
+                    @BeforeAll
+                    static void setUp() {
+                        wireMockServer = new WireMockServer(0); // Puerto dinámico
+                        wireMockServer.start();
+                
+                        String baseUrl = "http://localhost:" + wireMockServer.port();
+                        WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
+                        bookService = new BookService(webClient, bookRepository, authorRepository);
     }
 
     @AfterAll
