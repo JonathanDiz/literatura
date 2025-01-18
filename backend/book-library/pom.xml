@@ -123,12 +123,28 @@
 	</dependencies>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+    <plugins>
+        <!-- Plugin de Spring Boot -->
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+
+        <!-- Plugin para ejecutar pruebas -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.5.2</version>
+            <configuration>
+                <skipTests>false</skipTests>
+                <testFailureIgnore>false</testFailureIgnore>
+                <!-- Incluye o excluye tests si es necesario -->
+                <!-- <includes>
+                    <include>**/*Test.java</include>
+                </includes> -->
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 
 </project>

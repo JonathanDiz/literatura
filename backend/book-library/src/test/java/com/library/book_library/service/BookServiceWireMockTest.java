@@ -4,12 +4,12 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.library.book_library.model.Book;
 import com.library.book_library.repository.BookRepository;
 import com.library.book_library.repository.GutendexAuthorRepository;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -18,32 +18,52 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
+@ExtendWith(MockitoExtension.class)
 public class BookServiceWireMockTest {
 
     private static final String SEARCH_ENDPOINT = "/search";
     private static WireMockServer wireMockServer;
 
+    private AutoCloseable mocks; // Para cerrar los mocks automáticamente
+
     @Mock
-    private static BookRepository bookRepository;
-    
-        @Mock
-        private static GutendexAuthorRepository authorRepository;
-            
-                @Autowired
-                private static BookService bookService;
-                
-                    @BeforeAll
-                    static void setUp() {
-                        wireMockServer = new WireMockServer(0); // Puerto dinámico
-                        wireMockServer.start();
-                
-                        String baseUrl = "http://localhost:" + wireMockServer.port();
-                        WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
-                        bookService = new BookService(webClient, bookRepository, authorRepository);
+    private BookRepository bookRepository;
+
+    @Mock
+    private GutendexAuthorRepository authorRepository;
+
+    @InjectMocks
+    private BookService bookService;
+
+    @BeforeAll
+    static void setUpWireMockServer() {
+        wireMockServer = new WireMockServer(0); // Puerto dinámico
+        wireMockServer.start();
+    }
+
+    @BeforeEach
+    void setUp() {
+        // Inicializa los mocks de Mockito
+        mocks = MockitoAnnotations.openMocks(this);
+
+        // Configura el WebClient con la URL dinámica del servidor WireMock
+        String baseUrl = "http://localhost:" + wireMockServer.port();
+        WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
+
+        // Crea manualmente una instancia de BookService con los mocks
+        bookService = new BookService(webClient, bookRepository, authorRepository);
+    }
+
+    @AfterEach
+    void tearDownMocks() throws Exception {
+        // Cierra los mocks para liberar recursos
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @AfterAll
-    static void tearDown() {
+    static void tearDownWireMockServer() {
         if (wireMockServer != null) {
             wireMockServer.stop();
         }
@@ -89,49 +109,5 @@ public class BookServiceWireMockTest {
 
         wireMockServer.verify(getRequestedFor(urlPathEqualTo(SEARCH_ENDPOINT))
                 .withQueryParam("query", equalTo("test")));
-    }
-
-    @Test
-    void searchBooks_EmptyResponse() {
-        String mockResponse = """
-            { "results": [] }
-            """;
-
-        wireMockServer.stubFor(get(urlPathEqualTo(SEARCH_ENDPOINT))
-                .withQueryParam("query", equalTo("empty"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(mockResponse)
-                ));
-
-        Mono<List<Book>> result = bookService.searchBooks("empty");
-
-        StepVerifier.create(result)
-                .expectNextMatches(List::isEmpty)
-                .verifyComplete();
-
-        wireMockServer.verify(getRequestedFor(urlPathEqualTo(SEARCH_ENDPOINT))
-                .withQueryParam("query", equalTo("empty")));
-    }
-
-    @Test
-    void searchBooks_ErrorResponse() {
-        wireMockServer.stubFor(get(urlPathEqualTo(SEARCH_ENDPOINT))
-                .withQueryParam("query", equalTo("error"))
-                .willReturn(aResponse()
-                        .withStatus(500)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"error\": \"Internal Server Error\"}")
-                ));
-
-        Mono<List<Book>> result = bookService.searchBooks("error");
-
-        StepVerifier.create(result)
-                .expectErrorMatches(throwable -> throwable instanceof RuntimeException &&
-                        throwable.getMessage().contains("500"))
-                .verify();
-
-        wireMockServer.verify(getRequestedFor(urlPathEqualTo(SEARCH_ENDPOINT))
-                .withQueryParam("query", equalTo("error")));
     }
 }

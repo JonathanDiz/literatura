@@ -9,7 +9,7 @@ public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     private String title;
     private List<String> subjects;
@@ -19,7 +19,7 @@ public class Book {
     private String mediaType;
     private List<Format> formats;
     private int downloadCount;
-    private List<String> languages;
+    private Integer pages;
     
     @ManyToMany(mappedBy = "books")
     private List<Genre> genres;
@@ -27,7 +27,7 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GutendexBook> gutendexBooks;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(name = "book_author",
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
@@ -37,6 +37,8 @@ public class Book {
     @ElementCollection
     private List<String> gutendexAuthorNames; // Solo almacena los nombres de los autores
 
+    @ElementCollection
+    private List<String> languages;
 
     // Constructores
     public Book() {}
@@ -67,11 +69,11 @@ public class Book {
     }
 
     // Getters y setters
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -231,6 +233,21 @@ public class Book {
      */
     public void setAuthors(List<GutendexAuthor> authors) {
         this.authors = authors;
+    }
+
+
+    /**
+     * @return Integer return the pages
+     */
+    public Integer getPages() {
+        return pages;
+    }
+
+    /**
+     * @param pages the pages to set
+     */
+    public void setPages(Integer pages) {
+        this.pages = pages;
     }
 
 }
