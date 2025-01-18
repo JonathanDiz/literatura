@@ -19,6 +19,7 @@ public class Author {
 
     @ManyToMany(mappedBy = "authors")
     private List<Book> books;
+    int count = books.size();
 
     @ManyToMany(mappedBy = "authors")
     private List<GutendexAuthor> gutendexAuthors;

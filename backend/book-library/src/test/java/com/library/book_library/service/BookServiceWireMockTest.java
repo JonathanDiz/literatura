@@ -2,9 +2,15 @@ package com.library.book_library.service;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.library.book_library.model.Book;
+import com.library.book_library.repository.BookRepository;
+import com.library.book_library.repository.GutendexAuthorRepository;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -17,7 +23,15 @@ public class BookServiceWireMockTest {
 
     private static final String SEARCH_ENDPOINT = "/search";
     private static WireMockServer wireMockServer;
-    private static BookService bookService;
+
+    @Mock
+    private BookRepository bookRepository;
+
+    @Mock
+    private GutendexAuthorRepository authorRepository;
+
+    @Autowired
+    private BookService bookService;
 
     @BeforeAll
     static void setUp() {

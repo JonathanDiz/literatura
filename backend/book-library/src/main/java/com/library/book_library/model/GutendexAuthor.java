@@ -31,6 +31,10 @@ public class GutendexAuthor {
     )
     private List<Author> authors;
 
+    @ManyToMany(mappedBy = "authors")
+    private List<Book> books;
+    int count = books.size();
+
     public GutendexAuthor() {
     }
 
