@@ -46,8 +46,12 @@ public class Book {
         this.gutendexAuthorNames = gutendexAuthorNames;
     }
 
-    public Book(int id2, String title2, List<GutendexAuthor> downloadCount, int languages, List<String> authors2) {
+    public Book(int id2, String title2, int downloadCount, List<String> languages, List<GutendexAuthor> authors2) {
         //TODO Auto-generated constructor stub
+    }
+
+    public Book(int i, String string, List<GutendexAuthor> asList, int j, List<String> asList2) {
+      //TODO Auto-generated constructor stub
     }
 
     public List<GutendexAuthor> getAuthors() {
