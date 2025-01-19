@@ -1,6 +1,7 @@
 package com.library.book_library.service;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.library.book_library.model.Book;
 import com.library.book_library.repository.BookRepository;
 import com.library.book_library.repository.GutendexAuthorRepository;
@@ -17,6 +18,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 @ExtendWith(MockitoExtension.class)
 public class BookServiceWireMockTest {
@@ -24,7 +26,7 @@ public class BookServiceWireMockTest {
     private static final String SEARCH_ENDPOINT = "/search";
     private static WireMockServer wireMockServer;
 
-    private AutoCloseable mocks; // Para cerrar los mocks automáticamente
+    private AutoCloseable mocks;
 
     @Mock
     private BookRepository bookRepository;
@@ -37,40 +39,40 @@ public class BookServiceWireMockTest {
 
     @BeforeAll
     static void setUpWireMockServer() {
-        wireMockServer = new WireMockServer(0); // Puerto dinámico
+        wireMockServer = new WireMockServer(wireMockConfig().dynamicPort());
         wireMockServer.start();
+        configureFor("localhost", wireMockServer.port());
     }
 
     @BeforeEach
     void setUp() {
-        // Inicializa los mocks de Mockito
         mocks = MockitoAnnotations.openMocks(this);
-
-        // Configura el WebClient con la URL dinámica del servidor WireMock
-        String baseUrl = "http://localhost:" + wireMockServer.port();
-        WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
-
-        // Crea manualmente una instancia de BookService con los mocks
+        
+        WebClient webClient = WebClient.builder()
+            .baseUrl(String.format("http://localhost:%d", wireMockServer.port()))
+            .build();
+        
         bookService = new BookService(webClient, bookRepository, authorRepository);
     }
 
     @AfterEach
-    void tearDownMocks() throws Exception {
-        // Cierra los mocks para liberar recursos
+    void tearDown() throws Exception {
         if (mocks != null) {
             mocks.close();
         }
+        wireMockServer.resetAll();
     }
 
     @AfterAll
     static void tearDownWireMockServer() {
-        if (wireMockServer != null) {
+        if (wireMockServer != null && wireMockServer.isRunning()) {
             wireMockServer.stop();
         }
     }
 
     @Test
     void searchBooks_Success() {
+        // Configurar el stub antes de la prueba
         String mockResponse = """
             {
                 "results": [
@@ -88,26 +90,31 @@ public class BookServiceWireMockTest {
             """;
 
         wireMockServer.stubFor(get(urlPathEqualTo(SEARCH_ENDPOINT))
-                .withQueryParam("query", equalTo("test"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(mockResponse)
-                ));
+            .withQueryParam("query", equalTo("test"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(mockResponse)));
 
+        // Ejecutar la prueba
         Mono<List<Book>> result = bookService.searchBooks("test");
 
+        // Verificar el resultado
         StepVerifier.create(result)
-                .expectNextMatches(books -> {
-                    Book book = books.get(0);
-                    return book.getId() == 1 &&
-                            book.getTitle().equals("Test Book") &&
-                            book.getDownloadCount() == 100 &&
-                            book.getLanguages().containsAll(List.of("en", "es")) &&
-                            book.getAuthors().get(0).getName().equals("Test Author");
-                })
-                .verifyComplete();
+            .expectNextMatches(books -> {
+                if (books.isEmpty()) return false;
+                Book book = books.get(0);
+                return book.getId() == 1 &&
+                       "Test Book".equals(book.getTitle()) &&
+                       book.getDownloadCount() == 100 &&
+                       book.getLanguages().containsAll(List.of("en", "es")) &&
+                       !book.getAuthors().isEmpty() &&
+                       "Test Author".equals(book.getAuthors().get(0).getName());
+            })
+            .verifyComplete();
 
+        // Verificar que se hizo la llamada correcta
         wireMockServer.verify(getRequestedFor(urlPathEqualTo(SEARCH_ENDPOINT))
-                .withQueryParam("query", equalTo("test")));
+            .withQueryParam("query", equalTo("test")));
     }
 }
