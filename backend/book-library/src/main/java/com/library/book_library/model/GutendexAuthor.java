@@ -1,6 +1,7 @@
 package com.library.book_library.model;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 public class GutendexAuthor {
@@ -8,8 +9,13 @@ public class GutendexAuthor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     private String name;
 
+    @ManyToMany(mappedBy = "authors")
+    private List<Book> books;
+
+    // Constructores, getters y setters
     public GutendexAuthor() {}
 
     public GutendexAuthor(String name) {
@@ -32,11 +38,11 @@ public class GutendexAuthor {
         this.name = name;
     }
 
-    @Override
-    public String toString() {
-        return "GutendexAuthor{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
     }
 }

@@ -1,34 +1,37 @@
 package com.library.book_library.model;
 
 import jakarta.persistence.*;
-import java.util.Objects;
+import java.util.List;
 
 @Entity
-@Table(name = "genres")
 public class Genre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(nullable = false, unique = true)
     private String name;
 
-    // Constructor vacío requerido por JPA
-    public Genre() {
-    }
+    @ManyToMany
+    @JoinTable(
+        name = "genre_book",
+        joinColumns = @JoinColumn(name = "genre_id"),
+        inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> books;
 
-    // Constructor con parámetros
+    // Constructores, getters y setters
+    public Genre() {}
+
     public Genre(String name) {
         this.name = name;
     }
 
-    // Getters y setters
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -40,26 +43,11 @@ public class Genre {
         this.name = name;
     }
 
-    // Métodos equals y hashCode
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Genre genre = (Genre) o;
-        return Objects.equals(id, genre.id) && Objects.equals(name, genre.name);
+    public List<Book> getBooks() {
+        return books;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name);
-    }
-
-    // Método toString
-    @Override
-    public String toString() {
-        return "Genre{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
+    public void setBooks(List<Book> books) {
+        this.books = books;
     }
 }
